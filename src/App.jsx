@@ -3,6 +3,7 @@ import { GridStack } from "gridstack";
 import { debounce } from "lodash";
 import "./index.css";
 import "gridstack/dist/gridstack.min.css";
+import "gridstack/dist/gridstack-extra.css";
 
 const Item = ({ id }) => <div>{id}</div>;
 
@@ -31,13 +32,19 @@ const ControlledStack = ({ items, addItem }) => {
     console.log("Current grid state:", gridState);
   }, 500);
 
+  console.log("items", items);
+
   useEffect(() => {
     gridRef.current =
       gridRef.current ||
-      GridStack.init(
-        { float: true, disableResize: true, removable: "#trash" },
-        ".controlled"
-      );
+      GridStack.init({
+        float: true,
+        disableResize: true,
+        removable: "#trash",
+        minRow: 20,
+        verticalMargin: 18,
+        horizontalMargin: 9,
+      });
 
     const grid = gridRef.current;
     grid.batchUpdate();
@@ -46,15 +53,24 @@ const ControlledStack = ({ items, addItem }) => {
       const widget = grid.makeWidget(refs.current[id].current);
       widget.setAttribute("data-id", id);
     });
-
+    grid.off("added removed change");
+    grid.on("added removed change", function (e, items) {
+      let str = "";
+      items.forEach(function (item) {
+        str += " (x,y)=" + item.x + "," + item.y;
+      });
+      console.log(e.type + " " + items.length + " items:" + str);
+    });
     // grid.on("dragstop", handleDragStop);
     grid.batchUpdate(false);
   }, [items]);
 
   return (
     <div>
-      <button onClick={addItem}>Add new widget</button>
-
+      <div className="flex">
+        <button onClick={addItem}>Add new widget</button>
+        <div id="trash"></div>
+      </div>
       <div className={`grid-stack controlled`}>
         {[...items].map((item, i) => {
           return (
@@ -78,7 +94,14 @@ const ControlledExample = () => {
   return (
     <ControlledStack
       items={items}
-      addItem={() => setItems([...items, { id: `item-${items.length + 1}` }])}
+      addItem={() =>
+        setItems([
+          ...items,
+          {
+            id: `item-${items.length + 1}`,
+          },
+        ])
+      }
     />
   );
 };
