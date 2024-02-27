@@ -34,7 +34,10 @@ const ControlledStack = ({ items, addItem }) => {
   useEffect(() => {
     gridRef.current =
       gridRef.current ||
-      GridStack.init({ float: true, disableResize: true }, ".controlled");
+      GridStack.init(
+        { float: true, disableResize: true, removable: "#trash" },
+        ".controlled"
+      );
 
     const grid = gridRef.current;
     grid.batchUpdate();
@@ -44,13 +47,14 @@ const ControlledStack = ({ items, addItem }) => {
       widget.setAttribute("data-id", id);
     });
 
-    grid.on("dragstop", handleDragStop);
+    // grid.on("dragstop", handleDragStop);
     grid.batchUpdate(false);
   }, [items]);
 
   return (
     <div>
       <button onClick={addItem}>Add new widget</button>
+
       <div className={`grid-stack controlled`}>
         {[...items].map((item, i) => {
           return (
