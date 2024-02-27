@@ -17,14 +17,12 @@ const ControlledStack = ({ items, addItem }) => {
   }
 
   const handleDragStop = debounce((event, items) => {
-    if (event.type === "dragstop") {
-      const element = items;
-      const id = element.getAttribute("data-id");
-      const node = gridRef.current.engine.nodes.find((n) => n.el === element);
-      const x = node.x;
-      const y = node.y;
-      console.log(`Item ${id} moved to position (${x}, ${y})`);
-    }
+    const element = items;
+    const id = element.getAttribute("data-id");
+    const node = gridRef.current.engine.nodes.find((n) => n.el === element);
+    const x = node.x;
+    const y = node.y;
+    console.log(`Item ${id} moved to position (${x}, ${y})`);
 
     // Save the current state of the grid
     const gridState = gridRef.current.save();
@@ -36,15 +34,7 @@ const ControlledStack = ({ items, addItem }) => {
   useEffect(() => {
     gridRef.current =
       gridRef.current ||
-      GridStack.init(
-        {
-          float: true,
-          acceptWidgets: true,
-          disableResize: true,
-          removable: "#trash",
-        },
-        ".controlled"
-      );
+      GridStack.init({ float: true, disableResize: true }, ".controlled");
 
     const grid = gridRef.current;
     grid.batchUpdate();
@@ -53,15 +43,8 @@ const ControlledStack = ({ items, addItem }) => {
       const widget = grid.makeWidget(refs.current[id].current);
       widget.setAttribute("data-id", id);
     });
-    grid.on("added removed change", function (e, items) {
-      let str = "";
-      items.forEach(function (item) {
-        str += " (x,y)=" + item.x + "," + item.y;
-      });
-      console.log(e.type + " " + items.length + " items:" + str);
-    });
+
     grid.on("dragstop", handleDragStop);
-    grid.on("removed", handleDragStop); // Add this line
     grid.batchUpdate(false);
   }, [items]);
 
@@ -89,23 +72,10 @@ const ControlledStack = ({ items, addItem }) => {
 const ControlledExample = () => {
   const [items, setItems] = useState([{ id: "item-1" }, { id: "item-2" }]);
   return (
-    <div>
-      <div>
-        <div id="trash" style={{ padding: "5px", marginBottom: "15px" }}>
-          <div>
-            <p name="trash">TRSH</p>
-          </div>
-          <div>
-            <span>Drop here to remove!</span>
-          </div>
-        </div>
-      </div>
-
-      <ControlledStack
-        items={items}
-        addItem={() => setItems([...items, { id: `item-${items.length + 1}` }])}
-      />
-    </div>
+    <ControlledStack
+      items={items}
+      addItem={() => setItems([...items, { id: `item-${items.length + 1}` }])}
+    />
   );
 };
 export default ControlledExample;
